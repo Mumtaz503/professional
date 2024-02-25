@@ -32,6 +32,7 @@ describe("ChainManager unit tests", () => {
       const firstName = "Walter";
       const lastName = "White";
       const field = "Chemistry teacher";
+      const education = "P.H.D";
       const SVG_FILE_PATH = "./images/IdToken.svg";
       const fullSvgPath = path.resolve(SVG_FILE_PATH);
       let idSvg;
@@ -44,6 +45,7 @@ describe("ChainManager unit tests", () => {
         firstName,
         lastName,
         field,
+        education,
         idSvg
       );
       await tx.wait(1);
@@ -57,6 +59,18 @@ describe("ChainManager unit tests", () => {
         chainManager,
         "UpkeepPerformed"
       );
+      /* Updated Token URI metadata with Education added */
+      // {
+      //   "firstname": "Walter",
+      //   "lastname": "White",
+      //   "field": "Chemistry teacher",
+      //   "education": "P.H.D",
+      //   "attributes": [
+      //     { "trait_type": "experience", "value": 0 },
+      //     { "trait_type": "education", "value": 0 }
+      //   ],
+      //   "image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj4NCiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IndoaXRlIiAvPg0KICA8dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjIwIiBmaWxsPSJibGFjayI+UHJvZmVzc2lvbmFsIElkZW50aXR5PC90ZXh0Pg0KPC9zdmc+DQo="
+      // }
     });
   });
 });

@@ -38,6 +38,7 @@ contract ChainManager is AutomationCompatibleInterface {
         string firstName;
         string lastName;
         string field;
+        string education;
     }
 
     /**
@@ -76,9 +77,10 @@ contract ChainManager is AutomationCompatibleInterface {
         string memory _fName,
         string memory _lName,
         string memory _field,
+        string memory _edu,
         string memory _svg
     ) public {
-        UserInfo memory userInfo = UserInfo(_fName, _lName, _field);
+        UserInfo memory userInfo = UserInfo(_fName, _lName, _field, _edu);
         s_dataEntered = DataEntered.YES;
         s_tokenReciever = msg.sender;
         s_addressToUserInfo[msg.sender] = userInfo;
@@ -120,6 +122,7 @@ contract ChainManager is AutomationCompatibleInterface {
             s_addressToUserInfo[s_tokenReciever].firstName,
             s_addressToUserInfo[s_tokenReciever].lastName,
             s_addressToUserInfo[s_tokenReciever].field,
+            s_addressToUserInfo[s_tokenReciever].education,
             s_addressToSvg[s_tokenReciever]
         );
 
@@ -145,6 +148,12 @@ contract ChainManager is AutomationCompatibleInterface {
         uint256 _value /*, uint256 _erc1155TokenId*/
     ) external {
         idTokenContract.updateStats(_tokenId, _value);
+    }
+
+    function academicVerification(uint256 _tokenId, uint256 _value) external {
+        // Perform academic verification logic here...
+        // Make a call to RewardToken contract to mint ERC-1155 for Education verification to professional
+        idTokenContract.verifyEducation(_tokenId, _value);
     }
 
     function getUserInfo(address _user) public view returns (UserInfo memory) {

@@ -41,7 +41,9 @@ contract IDToken is ERC721URIStorage, Ownable {
         string firstName;
         string lastName;
         string field;
+        string education;
         uint256 experiencePoints;
+        uint256 eduVerification;
     }
 
     /** @dev s_tokenCounter acts as the tokenId of the professional's token
@@ -65,6 +67,12 @@ contract IDToken is ERC721URIStorage, Ownable {
         address indexed professional_,
         uint256 indexed tokenId_,
         uint256 experiencePoints_
+    );
+
+    event EducationVerified(
+        address indexed professional_,
+        uint256 indexed tokenId_,
+        uint256 educationVerification_
     );
 
     /** @dev mapping to keep track of all the userInfo/stats against the issued tokenId */
@@ -105,9 +113,17 @@ contract IDToken is ERC721URIStorage, Ownable {
         string memory _fName,
         string memory _lName,
         string memory _field,
+        string memory _edu,
         string memory _svg
     ) external onlyOwner {
-        s_tokenIdToStats[s_tokenCounter] = Stats(_fName, _lName, _field, 0);
+        s_tokenIdToStats[s_tokenCounter] = Stats(
+            _fName,
+            _lName,
+            _field,
+            _edu,
+            0,
+            0
+        );
         _safeMint(_to, s_tokenCounter);
         s_tokenCounter = s_tokenCounter + 1;
         s_idSvgUri = svgToImageUri(_svg);
@@ -139,6 +155,24 @@ contract IDToken is ERC721URIStorage, Ownable {
             _ownerOf(_tokenId),
             _tokenId,
             s_tokenIdToStats[_tokenId].experiencePoints
+        );
+        _setTokenURI(_tokenId, tokenURI(_tokenId));
+    }
+
+    function verifyEducation(
+        uint256 _tokenId,
+        uint256 _verficationReward
+    ) external onlyOwner {
+        if (_ownerOf(_tokenId) == address(0)) {
+            revert IDToken__QueryForNonExistentToken();
+        }
+
+        s_tokenIdToStats[_tokenId].eduVerification = _verficationReward;
+
+        emit EducationVerified(
+            _ownerOf(_tokenId),
+            _tokenId,
+            s_tokenIdToStats[_tokenId].eduVerification
         );
         _setTokenURI(_tokenId, tokenURI(_tokenId));
     }
@@ -175,7 +209,6 @@ contract IDToken is ERC721URIStorage, Ownable {
     /**
      * @dev The function returns a stringified token URI metadata
      *      after concatenating the Base64 encoded json object with _baseURI
-     *      (This was the hardest part)
      * @param _tokenId the token ID of the minted Identity token
      */
     function tokenURI(
@@ -205,8 +238,13 @@ contract IDToken is ERC721URIStorage, Ownable {
                                 s_tokenIdToStats[_tokenId].lastName,
                                 '", "field":"',
                                 s_tokenIdToStats[_tokenId].field,
+                                '", "education":"',
+                                s_tokenIdToStats[_tokenId].education,
                                 '", "attributes": [{"trait_type":"experience","value":',
                                 (s_tokenIdToStats[_tokenId].experiencePoints)
+                                    .toString(),
+                                '}, {"trait_type":"education", "value":',
+                                (s_tokenIdToStats[_tokenId].eduVerification)
                                     .toString(),
                                 '}],"image":"',
                                 s_idSvgUri,
