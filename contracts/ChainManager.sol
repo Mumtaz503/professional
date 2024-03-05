@@ -13,13 +13,15 @@ import "hardhat/console.sol";
  */
 contract ChainManager is AutomationCompatibleInterface {
     error ChainManager__UpkeepNotNeeded();
+    error ChainManager__User_Already_Exists(address);
+    error ChainManager__User_Doesnt_Exist();
     IDToken idTokenContract = new IDToken(address(this));
 
     /** @notice I did not use the ERC-1155 token contract here because it won't make any sense if we don't have
      *          Additional attributes for the user to reward. However, the idea of rewarding is explained below
      *          in the rewardUser function
      */
-    RewardToken private rewardToken;
+    RewardToken private s_rewardToken;
 
     /**
      * @dev DataEntered tracks the state of the contract whenever a professional enters their information
@@ -55,14 +57,15 @@ contract ChainManager is AutomationCompatibleInterface {
     mapping(address => UserInfo) private s_addressToUserInfo;
     mapping(address => string) private s_addressToSvg;
     event UpkeepPerformed(uint256 balance);
+    event EducationVerified(address indexed professional_, uint256 value_);
 
     /**
      * @notice Constructor is payable so at the deployment whoever owns the contract must deploy some ETH to cover
      *          transaction costs. That later professional/organization interactions may cause
      * @dev msg.value in wei 50 * 10 ** 18 = 50 ETH
      */
-    constructor() payable {
-        require(msg.value >= 50 * 1e18, "not enough ETH");
+    constructor(address _rewardToken) {
+        s_rewardToken = RewardToken(_rewardToken);
     }
 
     /**
@@ -80,6 +83,9 @@ contract ChainManager is AutomationCompatibleInterface {
         string memory _edu,
         string memory _svg
     ) public {
+        if (bytes(s_addressToUserInfo[msg.sender].firstName).length > 0) {
+            revert ChainManager__User_Already_Exists(msg.sender);
+        }
         UserInfo memory userInfo = UserInfo(_fName, _lName, _field, _edu);
         s_dataEntered = DataEntered.YES;
         s_tokenReciever = msg.sender;
@@ -150,10 +156,17 @@ contract ChainManager is AutomationCompatibleInterface {
         idTokenContract.updateStats(_tokenId, _value);
     }
 
+    // Discuss this with me before adding the functionality
     function academicVerification(uint256 _tokenId, uint256 _value) external {
         // Perform academic verification logic here...
         // Make a call to RewardToken contract to mint ERC-1155 for Education verification to professional
+        if (bytes(s_addressToUserInfo[msg.sender].firstName).length == 0) {
+            revert ChainManager__User_Doesnt_Exist();
+        }
         idTokenContract.verifyEducation(_tokenId, _value);
+        uint256 eduVerId = s_rewardToken.getEduVerId();
+        s_rewardToken.reward(msg.sender, eduVerId, _value);
+        emit EducationVerified(msg.sender, _value);
     }
 
     function getUserInfo(address _user) public view returns (UserInfo memory) {

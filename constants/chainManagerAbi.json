@@ -1,0 +1,132 @@
+[
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_rewardToken", "type": "address" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  { "inputs": [], "name": "ChainManager__UpkeepNotNeeded", "type": "error" },
+  {
+    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "name": "ChainManager__User_Already_Exists",
+    "type": "error"
+  },
+  { "inputs": [], "name": "ChainManager__User_Doesnt_Exist", "type": "error" },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "professional_",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "value_",
+        "type": "uint256"
+      }
+    ],
+    "name": "EducationVerified",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "balance",
+        "type": "uint256"
+      }
+    ],
+    "name": "UpkeepPerformed",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "_tokenId", "type": "uint256" },
+      { "internalType": "uint256", "name": "_value", "type": "uint256" }
+    ],
+    "name": "academicVerification",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "bytes", "name": "", "type": "bytes" }],
+    "name": "checkUpkeep",
+    "outputs": [
+      { "internalType": "bool", "name": "upkeepNeeded", "type": "bool" },
+      { "internalType": "bytes", "name": "", "type": "bytes" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "string", "name": "_fName", "type": "string" },
+      { "internalType": "string", "name": "_lName", "type": "string" },
+      { "internalType": "string", "name": "_field", "type": "string" },
+      { "internalType": "string", "name": "_edu", "type": "string" },
+      { "internalType": "string", "name": "_svg", "type": "string" }
+    ],
+    "name": "enterUserInfo",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getState",
+    "outputs": [
+      {
+        "internalType": "enum ChainManager.DataEntered",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_user", "type": "address" }
+    ],
+    "name": "getUserInfo",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "string", "name": "firstName", "type": "string" },
+          { "internalType": "string", "name": "lastName", "type": "string" },
+          { "internalType": "string", "name": "field", "type": "string" },
+          { "internalType": "string", "name": "education", "type": "string" }
+        ],
+        "internalType": "struct ChainManager.UserInfo",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "bytes", "name": "", "type": "bytes" }],
+    "name": "performUpkeep",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "_tokenId", "type": "uint256" },
+      { "internalType": "uint256", "name": "_value", "type": "uint256" }
+    ],
+    "name": "rewardUser",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

@@ -1,6 +1,8 @@
 const { network, ethers } = require("hardhat");
 const fs = require("fs");
 const path = require("path");
+const { verify } = require("../utils/verify");
+const { developmentChains } = require("../helper-hardhat-config");
 
 // const SVG_FILE_PATH = "./images/IdToken.svg";
 
@@ -30,6 +32,12 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   });
 
   log("-----------------------------------------");
+  if (!developmentChains.includes(network.name)) {
+    log("-----------------------------------------");
+    log("verifying reward token contract...");
+    await verify(idToken.address, constructorArguments);
+    log("-----------------------------------------");
+  }
 };
 
 module.exports.tags = ["all", "IDToken"];

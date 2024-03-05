@@ -1,29 +1,28 @@
-const { ethers, network } = require("hardhat");
+const { network } = require("hardhat");
 const { verify } = require("../utils/verify");
 const { developmentChains } = require("../helper-hardhat-config");
 
-module.exports = async ({ getNamedAccounts, deployments }) => {
+module.exports = async function ({ getNamedAccounts, deployments }) {
   const { deploy, log } = deployments;
   const { deployer } = await getNamedAccounts();
-  log("-----------------------------------------");
-  log("deploying ChainManager contract...");
-  const rewardToken = await ethers.getContract("RewardToken", deployer);
-  const constructorArgs = [rewardToken.target];
 
-  //Contract verification on Etherscan will be done after local-node testing is complete at project level
-  const chainManager = await deploy("ChainManager", {
+  log("-----------------------------------------");
+  log("deploying reward token contract...");
+
+  const rewardToken = await deploy("RewardToken", {
     from: deployer,
-    args: constructorArgs,
     log: true,
+    args: [],
     waitConfirmations: network.config.blockConfirmations || 1,
   });
   log("-----------------------------------------");
+
   if (!developmentChains.includes(network.name)) {
     log("-----------------------------------------");
     log("verifying reward token contract...");
-    await verify(chainManager.address, constructorArgs);
+    await verify(rewardToken.address, []);
     log("-----------------------------------------");
   }
 };
 
-module.exports.tags = ["all", "ChainManager"];
+module.exports.tags = ["all", "reward"];

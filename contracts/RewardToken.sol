@@ -26,4 +26,8 @@ contract RewardToken is ERC1155 {
     function eduVerify(address _to, uint256 _eduVerId) external {
         _mint(_to, _eduVerId, EDU_VERIFICATION_TOKEN_AMOUNT, "");
     }
+
+    function getEduVerId() public pure returns (uint256) {
+        return EDUCATION_VERIFICATION_ID;
+    }
 }
