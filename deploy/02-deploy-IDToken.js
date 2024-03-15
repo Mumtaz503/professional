@@ -20,13 +20,13 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   //   console.error(error);
   // }
 
-  const chainManager = await ethers.getContract("ChainManager", deployer);
-  const constructorArguments = [/*idSvg,*/ chainManager.target];
+  // const chainManager = await ethers.getContract("ChainManager", deployer);
+  // const constructorArguments = [/*idSvg,*/ chainManager.target];
 
   //Contract verification on Etherscan will be done after local-node testing is complete at project level
   const idToken = await deploy("IDToken", {
     from: deployer,
-    args: constructorArguments,
+    args: [],
     log: true,
     waitConfirmations: network.config.blockConfirmations || 1,
   });
@@ -35,7 +35,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   if (!developmentChains.includes(network.name)) {
     log("-----------------------------------------");
     log("verifying reward token contract...");
-    await verify(idToken.address, constructorArguments);
+    await verify(idToken.address, []);
     log("-----------------------------------------");
   }
 };

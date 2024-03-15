@@ -1,0 +1,24 @@
+-----------------------------------------
+deploying reward token contract...
+reusing "RewardToken" at 0x0d946CAB9Eb98c34a66a8c0a33540E9De8F434E8
+-----------------------------------------
+-----------------------------------------
+verifying reward token contract...       
+Verifyng Contract Please Wait....        
+The contract 0x0d946CAB9Eb98c34a66a8c0a33540E9De8F434E8 has already been verified.  
+https://sepolia.etherscan.io/address/0x0d946CAB9Eb98c34a66a8c0a33540E9De8F434E8#code
+-----------------------------------------
+-----------------------------------------
+deploying IDToken contract...
+deploying "IDToken" (tx: 0xa71e73931cfc2e2207d33de33a6986c5280b77b8fc511c1c40fa2bdf563e07db)...: deployed at 0x8A81a9170B77e6e04233E33977A2B714e37382DA with 3208226 gas
+-----------------------------------------
+-----------------------------------------
+verifying reward token contract...       
+Verifyng Contract Please Wait....        
+Successfully submitted source code for contract
+contracts/IDToken.sol:IDToken at 0x8A81a9170B77e6e04233E33977A2B714e37382DA
+for verification on the block explorer. Waiting for verification result... 
+
+Successfully verified contract IDToken on the block explorer.
+https://sepolia.etherscan.io/address/0x8A81a9170B77e6e04233E33977A2B714e37382DA#code
+-----------------------------------------

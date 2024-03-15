@@ -2,10 +2,11 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
-import "hardhat/console.sol";
+import "./RewardToken.sol";
+
+// import "hardhat/console.sol";
 
 /**
  * @title IDToken a non-transferable ERC-721 token that allows professional individuals to
@@ -23,14 +24,18 @@ import "hardhat/console.sol";
  *         in the docs I shared with you.
  *         Additional functionality can be added as per requirements
  */
-contract IDToken is ERC721URIStorage, Ownable {
+contract IDToken is ERC721URIStorage {
     /* Custom error codes to save gas (see gas-report.txt file in gas-reports folder)*/
     error IDToken__QueryForNonExistentToken();
     error IDToken__ImageNotFound();
     error IDToken__CannotTransferToken();
+    error IDToken__User_Already_Exists();
+    error IDToken__Not_An_Organization();
+    error IDToken__Only_Owner_Can_Verify();
 
     /** @dev allows for a usage of uint256 for encoding bytes and strings */
     using Strings for uint256;
+    // RewardToken private s_rewardToken;
 
     /** @dev a struct type declaration to keep track of a user's info
      *  @notice experiencePoints can be equated to the amount of our ERC-1155 tokens a user
@@ -50,8 +55,7 @@ contract IDToken is ERC721URIStorage, Ownable {
      *       can change this to another form of creating the ID at project level
      */
     uint256 private s_tokenCounter;
-    string private s_idSvgUri;
-    address private immutable i_chainMgr;
+    address[] private s_professionals;
 
     /** @dev events are used in the front-end to render the changes on the blockchain.
      *       Can add more events for tokenURI and metadata.
@@ -77,15 +81,9 @@ contract IDToken is ERC721URIStorage, Ownable {
 
     /** @dev mapping to keep track of all the userInfo/stats against the issued tokenId */
     mapping(uint256 => Stats) private s_tokenIdToStats;
+    mapping(uint256 => string) private s_tokenIdToSvg;
 
-    /** @param _chainMgr is the address of chain manager contract that acts as the owner of this
-     *         token contract
-     */
-    constructor(
-        // string memory _idTokenSvg,
-        address _chainMgr
-    ) ERC721("Professional", "PRO") Ownable(_chainMgr) {
-        i_chainMgr = _chainMgr;
+    constructor() ERC721("Professional", "PRO") {
         s_tokenCounter = 0;
     }
 
@@ -95,8 +93,6 @@ contract IDToken is ERC721URIStorage, Ownable {
      *      a professional will call the "enterUserInformation" function in the chain manager
      *      contract by passing in the required info then this function will be triggered
      *      in an automated manner to mint the token to the user.
-     * @param _to The address of the professional who will call this function in
-     *            the chain manager contract
      * @param _fName The first name of the professional
      * @param _lName The last name of the professional
      * @param _field The field of the
@@ -109,13 +105,18 @@ contract IDToken is ERC721URIStorage, Ownable {
      *          not possible at task level
      */
     function mintNft(
-        address _to,
         string memory _fName,
         string memory _lName,
         string memory _field,
         string memory _edu,
         string memory _svg
-    ) external onlyOwner {
+    ) external {
+        address[] memory professionals = s_professionals;
+        for (uint256 i = 0; i < professionals.length; i++) {
+            if (msg.sender == professionals[i]) {
+                revert IDToken__User_Already_Exists();
+            }
+        }
         s_tokenIdToStats[s_tokenCounter] = Stats(
             _fName,
             _lName,
@@ -124,11 +125,14 @@ contract IDToken is ERC721URIStorage, Ownable {
             0,
             0
         );
-        _safeMint(_to, s_tokenCounter);
+        _safeMint(msg.sender, s_tokenCounter);
+        s_tokenIdToSvg[s_tokenCounter] = svgToImageUri(_svg);
+        emit IdTokenMinted(msg.sender, s_tokenCounter, _fName, _lName, _field);
         s_tokenCounter = s_tokenCounter + 1;
-        s_idSvgUri = svgToImageUri(_svg);
-        emit IdTokenMinted(_to, s_tokenCounter, _fName, _lName, _field);
-        console.log("Working");
+        //This line will prevent a professional to create multiple IDs.
+        // I am commenting this out because I need to mint multiple IDs from one account for testnet testing
+        // These are the limitations of test-net testing
+        // s_professionals.push(msg.sender);
     }
 
     /**
@@ -142,14 +146,15 @@ contract IDToken is ERC721URIStorage, Ownable {
      * @param _experiencePoints the amount of ERC-1155 tokens minted to the professional by the
      *                          company/organization
      */
-    function updateStats(
-        uint256 _tokenId,
-        uint256 _experiencePoints
-    ) external onlyOwner {
+    function updateStats(uint256 _tokenId, uint256 _experiencePoints) external {
         if (_ownerOf(_tokenId) == address(0)) {
             revert IDToken__QueryForNonExistentToken();
         }
 
+        if (_ownerOf(_tokenId) == msg.sender) {
+            revert IDToken__Not_An_Organization();
+        }
+        //Shouldn't be able to hire the professional twice
         s_tokenIdToStats[_tokenId].experiencePoints += _experiencePoints;
         emit StatsUpdated(
             _ownerOf(_tokenId),
@@ -162,9 +167,13 @@ contract IDToken is ERC721URIStorage, Ownable {
     function verifyEducation(
         uint256 _tokenId,
         uint256 _verficationReward
-    ) external onlyOwner {
+    ) external {
         if (_ownerOf(_tokenId) == address(0)) {
             revert IDToken__QueryForNonExistentToken();
+        }
+
+        if (_ownerOf(_tokenId) != msg.sender) {
+            revert IDToken__Only_Owner_Can_Verify();
         }
 
         s_tokenIdToStats[_tokenId].eduVerification = _verficationReward;
@@ -174,6 +183,7 @@ contract IDToken is ERC721URIStorage, Ownable {
             _tokenId,
             s_tokenIdToStats[_tokenId].eduVerification
         );
+        // s_rewardToken.eduVerify(msg.sender, 2);
         _setTokenURI(_tokenId, tokenURI(_tokenId));
     }
 
@@ -218,7 +228,7 @@ contract IDToken is ERC721URIStorage, Ownable {
             revert IDToken__QueryForNonExistentToken();
         }
 
-        if (bytes(s_idSvgUri).length == 0) {
+        if (bytes(s_tokenIdToSvg[_tokenId]).length == 0) {
             revert IDToken__ImageNotFound();
         }
         /**
@@ -247,7 +257,7 @@ contract IDToken is ERC721URIStorage, Ownable {
                                 (s_tokenIdToStats[_tokenId].eduVerification)
                                     .toString(),
                                 '}],"image":"',
-                                s_idSvgUri,
+                                (s_tokenIdToSvg[_tokenId]),
                                 '"}'
                             )
                         )
@@ -277,8 +287,8 @@ contract IDToken is ERC721URIStorage, Ownable {
         return s_tokenCounter;
     }
 
-    function getImageUri() public view returns (string memory) {
-        return s_idSvgUri;
+    function getImageUri(uint256 _tokenId) public view returns (string memory) {
+        return s_tokenIdToSvg[_tokenId];
     }
 
     function getStats(uint256 _tokenId) public view returns (Stats memory) {

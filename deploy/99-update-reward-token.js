@@ -1,8 +1,9 @@
 const { ethers, network } = require("hardhat");
 const fs = require("fs");
+require("dotenv").config();
 
-const FRONTEND_ADDRESSES_FILE = "../constants/rewardTokenAddress.json";
-const FRONTEND_ABI_FILE = "../constants/rewardTokenAbi.json";
+const FRONTEND_ADDRESSES_FILE = "../rewardTokenAddress.json";
+const FRONTEND_ABI_FILE = "../rewardTokenAbi.json";
 
 module.exports = async function () {
   if (process.env.UPDATE_FRONTEND) {
@@ -21,12 +22,14 @@ async function updateContractAddresses() {
   if (chainId in currentAddresses) {
     if (!currentAddresses[chainId].includes(rewardToken.target)) {
       currentAddresses[chainId].push(rewardToken.target);
+      console.log("updating addresses");
     }
   }
   {
     currentAddresses[chainId] = [rewardToken.target];
   }
   fs.writeFileSync(FRONTEND_ADDRESSES_FILE, JSON.stringify(currentAddresses));
+  console.log("Writing file");
 }
 
 async function updateAbi() {
@@ -35,6 +38,7 @@ async function updateAbi() {
     FRONTEND_ABI_FILE,
     rewardToken.interface.format(ethers.utils.FormatTypes.json)
   );
+  console.log("writing abi file.");
 }
 
 module.exports.tags = ["frontend"];
